@@ -22,14 +22,18 @@ const cards = [
   { name: 'spiderman', img: 'spiderman.jpg' },
   { name: 'superman', img: 'superman.jpg' },
   { name: 'the avengers', img: 'the-avengers.jpg' },
-  { name: 'thor', img: 'thor.jpg' }
+  { name: 'thor', img: 'thor.jpg' },
 ];
 
 const memoryGame = new MemoryGame(cards);
 
-window.addEventListener('load', (event) => {
+window.addEventListener('load', event => {
+  memoryGame.shuffleCards();
+  pairsClicked = document.getElementById('pairs-clicked');
+  pairsGuessed = document.getElementById('pairs-guessed');
+  finalMessage = document.getElementsByTagName('h1')[0];
   let html = '';
-  memoryGame.cards.forEach((pic) => {
+  memoryGame.cards.forEach(pic => {
     html += `
       <div class="card" data-card-name="${pic.name}">
         <div class="back" name="${pic.img}"></div>
@@ -42,10 +46,34 @@ window.addEventListener('load', (event) => {
   document.querySelector('#memory-board').innerHTML = html;
 
   // Bind the click event of each element to a function
-  document.querySelectorAll('.card').forEach((card) => {
+  document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', () => {
-      // TODO: write some code here
-      console.log(`Card clicked: ${card}`);
+      card.classList.add('turned');
+      memoryGame.pickedCards.push(card);
+
+      if (memoryGame.pickedCards.length === 2) {
+        const card1 = memoryGame.pickedCards[0].getAttribute('data-card-name');
+        const card2 = memoryGame.pickedCards[1].getAttribute('data-card-name');
+        const isMatch = memoryGame.checkIfPair(card1, card2);
+        if (isMatch) {
+          pairsClicked.innerHTML = memoryGame.pairsClicked;
+          pairsGuessed.innerHTML = memoryGame.pairsGuessed;
+          // memoryGame.pickedCards = [];
+        } else {
+          memoryGame.pickedCards.forEach(pickedCard => {
+            setTimeout(() => {
+              pickedCard.classList.remove('turned');
+            }, 1000);
+          });
+          pairsClicked.innerHTML = memoryGame.pairsClicked;
+          pairsGuessed.innerHTML = memoryGame.pairsGuessed;
+        }
+        memoryGame.pickedCards = [];
+        if (memoryGame.checkIfFinished()) {
+          console.log('Game over. You won!');
+          finalMessage.innerHTML = 'You won!!!';
+        }
+      }
     });
   });
 });
